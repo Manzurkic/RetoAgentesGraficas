@@ -33,23 +33,40 @@ class AgenteVehiculo(Agent):
         )
         '''
         if self.frente == 0:
-            celdaEnfrente = (self.pos[0], self.pos[1]+1)
+            newy = self.pos[1] + 1
+            #celdaEnfrente = (self.pos[0], self.pos[1]+1)
+            if newy >= self.model.grid.height:
+                celdaEnfrente = (self.pos[0], 0)
+            else:
+                celdaEnfrente = (self.pos[0], newy)
             celdaDerecha = (self.pos[0]+1, self.pos[1])
-            # if celdaEnfrente[1] > self.model.grid.height
         elif self.frente == 1:
-            celdaEnfrente = (self.pos[0]+1, self.pos[1])
+            newx = self.pos[0] + 1
+            if newx >= self.model.grid.width:
+                celdaEnfrente = (0, self.pos[1])
+            else:
+                celdaEnfrente = (newx, self.pos[1])
+            #celdaEnfrente = (self.pos[0]+1, self.pos[1])
             celdaDerecha = (self.pos[0], self.pos[1]-1)
         elif self.frente == 2:
-            celdaEnfrente = (self.pos[0], self.pos[1]-1)
+            newy = self.pos[1] - 1
+            if newy <= 0:
+                celdaEnfrente = (self.pos[0], self.model.grid.height)
+            else:
+                celdaEnfrente = (self.pos[0], newy)
             celdaDerecha = (self.pos[0]-1, self.pos[1])
         elif self.frente == 3:
-            celdaEnfrente = (self.pos[0]-1, self.pos[1])
+            newx = self.pos[0] - 1
+            if newx <= 0:
+                celdaEnfrente = (self.model.grid.width, self.pos[1])
+            else:
+                celdaEnfrente = (newx, self.pos[1])
             celdaDerecha = (self.pos[0], self.pos[1]+1)
 
-        if not self.model.grid.out_of_bounds(celdaEnfrente) and self.model.grid.is_cell_empty(celdaEnfrente):
+        if self.model.grid.is_cell_empty(celdaEnfrente):
             self.model.grid.move_agent(self, celdaEnfrente)
 
-        elif not self.model.grid.out_of_bounds(celdaDerecha) and self.model.grid.is_cell_empty(celdaDerecha):
+        elif self.model.grid.is_cell_empty(celdaDerecha):
             self.model.grid.move_agent(self, celdaDerecha)
             #Hacer que el frente del coche gire cuando se gira hacia la derecha
             self.frente += 1
