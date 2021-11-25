@@ -22,36 +22,40 @@ class AgenteVehiculo(Agent):
         super().__init__(unique_id, model)
         self.tipo = random.choice([1, 2, 3])
         self.direccion = 0    # 0 - derecho, 1 - derecha
-        self.frente = 0       # 0 - arriba, 1 - abajo, 2 - izq, 3 - der
+        self.frente = 0       # 0 - arriba, 1 - derecha, 2 - abajo, 3 - izquierda
 
     def move(self):
+        '''
         possible_steps = self.model.grid.get_neighborhood(
             self.pos,
             moore=False,
             include_center=False
         )
-
+        '''
         if self.frente == 0:
             celdaEnfrente = (self.pos[0], self.pos[1]+1)
             celdaDerecha = (self.pos[0]+1, self.pos[1])
             # if celdaEnfrente[1] > self.model.grid.height
-
         elif self.frente == 1:
-            celdaEnfrente = (self.pos[0], self.pos[1]-1)
-            celdaDerecha = (self.pos[0]-1, self.pos[1])
-        elif self.frente == 2:
-            celdaEnfrente = (self.pos[0]-1, self.pos[1])
-            celdaDerecha = (self.pos[0], self.pos[1]+1)
-        elif self.frente == 3:
             celdaEnfrente = (self.pos[0]+1, self.pos[1])
             celdaDerecha = (self.pos[0], self.pos[1]-1)
+        elif self.frente == 2:
+            celdaEnfrente = (self.pos[0], self.pos[1]-1)
+            celdaDerecha = (self.pos[0]-1, self.pos[1])
+        elif self.frente == 3:
+            celdaEnfrente = (self.pos[0]-1, self.pos[1])
+            celdaDerecha = (self.pos[0], self.pos[1]+1)
 
         if not self.model.grid.out_of_bounds(celdaEnfrente) and self.model.grid.is_cell_empty(celdaEnfrente):
             self.model.grid.move_agent(self, celdaEnfrente)
 
         elif not self.model.grid.out_of_bounds(celdaDerecha) and self.model.grid.is_cell_empty(celdaDerecha):
             self.model.grid.move_agent(self, celdaDerecha)
-
+            #Hacer que el frente del coche gire cuando se gira hacia la derecha
+            self.frente += 1
+            #Solo hay cuatro direcciones posibles, regresar a direccion 0
+            if self.frente == 4:
+                self.frente = 0
         else:
             print("xd")
             return
@@ -188,8 +192,8 @@ class TraficModel(Model):
         for i in range(numBanq, numBanq + self.num_agents):
             a = AgenteVehiculo(i, self)
             self.schedule.add(a)
-            x = 0
-            y = 12
+            x = 12
+            y = 0
             self.grid.place_agent(a, (x, y))
 
     def step(self):
