@@ -25,84 +25,80 @@ class AgenteVehiculo(Agent):
         self.frente = 0       # 0 - arriba, 1 - derecha, 2 - abajo, 3 - izquierda
 
     def move(self):
-        '''
-        possible_steps = self.model.grid.get_neighborhood(
-            self.pos,
-            moore=False,
-            include_center=False
-        )
-        '''
+
         if self.frente == 0:
-            newy = self.pos[1] + 1
+            newY = self.pos[1] + 1
             #celdaEnfrente = (self.pos[0], self.pos[1]+1)
-            if newy >= self.model.grid.height:
-                celdaEnfrente = (self.pos[0], 0)
+            if newY >= self.model.grid.height:
+                if self.pos == (11, 23):
+                    celdaEnfrente = (12, 0)
+                else:
+                    celdaEnfrente = (self.pos[0], 0)
             else:
-                celdaEnfrente = (self.pos[0], newy)
+                celdaEnfrente = (self.pos[0], newY)
             celdaDerecha = (self.pos[0]+1, self.pos[1])
+            celdaIzquierda = (self.pos[0]-1, self.pos[1])
         elif self.frente == 1:
-            newx = self.pos[0] + 1
-            if newx >= self.model.grid.width:
-                celdaEnfrente = (0, self.pos[1])
+            newX = self.pos[0] + 1
+            if newX >= self.model.grid.width:
+                celdaEnfrente = (0, 12)
             else:
-                celdaEnfrente = (newx, self.pos[1])
+                celdaEnfrente = (newX, self.pos[1])
             #celdaEnfrente = (self.pos[0]+1, self.pos[1])
             celdaDerecha = (self.pos[0], self.pos[1]-1)
+            celdaIzquierda = (self.pos[0], self.pos[1]+1)
         elif self.frente == 2:
-            newy = self.pos[1] - 1
-            if newy <= 0:
+            newY = self.pos[1] - 1
+            if newY <= 0:
                 celdaEnfrente = (self.pos[0], self.model.grid.height)
             else:
-                celdaEnfrente = (self.pos[0], newy)
+                celdaEnfrente = (self.pos[0], newY)
             celdaDerecha = (self.pos[0]-1, self.pos[1])
+            celdaIzquierda = (self.pos[0]+1, self.pos[1])
         elif self.frente == 3:
-            newx = self.pos[0] - 1
-            if newx <= 0:
+            newX = self.pos[0] - 1
+            if newX <= 0:
                 celdaEnfrente = (self.model.grid.width, self.pos[1])
             else:
-                celdaEnfrente = (newx, self.pos[1])
+                celdaEnfrente = (newX, self.pos[1])
             celdaDerecha = (self.pos[0], self.pos[1]+1)
+            celdaIzquierda = (self.pos[0], self.pos[1]-1)
 
-        if self.model.grid.is_cell_empty(celdaEnfrente):
+        # if self.model.grid.is_cell_empty(celdaEnfrente):
+        #    self.model.grid.move_agent(self, celdaEnfrente)
+
+        if self.pos == (11, 10) or self.pos == (12, 10):
+            if self.model.grid[9][14].color == 2 or self.model.grid[9][14].color == 3:
+                return
+
+        elif self.pos == (10, 11) or self.pos == (10, 12):
+            if self.model.grid[14][9].color == 2 or self.model.grid[14][9].color == 3:
+                return
+
+        if self.pos == (12, 11) or self.pos == (11, 12):
+            # 0 - derecho, 1 - derecha ó izquierda
+            proxMov = random.choice([0, 1])
+            if proxMov == 0 and self.model.grid.is_cell_empty(celdaEnfrente):
+                self.model.grid.move_agent(self, celdaEnfrente)
+
+            else:
+                if self.frente == 0 and self.pos == (12, 11):
+                    self.model.grid.move_agent(self, celdaDerecha)
+                    # Hacer que el frente del coche gire cuando se gira hacia la derecha
+                    self.frente += 1
+                    # Solo hay cuatro direcciones posibles, regresar a direccion 0
+                    if self.frente == 4:
+                        self.frente = 0
+
+                elif self.frente == 1 and self.pos == (11, 12):
+                    self.model.grid.move_agent(self, celdaIzquierda)
+                    self.frente = 0
+
+        elif self.model.grid.is_cell_empty(celdaEnfrente):
             self.model.grid.move_agent(self, celdaEnfrente)
 
-        elif self.model.grid.is_cell_empty(celdaDerecha):
-            self.model.grid.move_agent(self, celdaDerecha)
-            #Hacer que el frente del coche gire cuando se gira hacia la derecha
-            self.frente += 1
-            #Solo hay cuatro direcciones posibles, regresar a direccion 0
-            if self.frente == 4:
-                self.frente = 0
         else:
-            print("xd")
             return
-
-        '''
-        self.direccion = random.choice([0, 1, 2, 3])
-        if self.direccion == 0:
-            newPos = (self.pos[0], self.pos[1]+1)
-            if not self.model.grid.out_of_bounds(newPos):
-                if self.model.grid.is_cell_empty(newPos):
-                    self.model.grid.move_agent(self, (newPos))
-
-        if self.direccion == 1:
-            newPos = (self.pos[0], self.pos[1]-1)
-            if not self.model.grid.out_of_bounds(newPos):
-                if self.model.grid.is_cell_empty(newPos):
-                    self.model.grid.move_agent(self, (newPos))
-
-        if self.direccion == 2:
-            newPos = (self.pos[0]-1, self.pos[1])
-            if not self.model.grid.out_of_bounds(newPos):
-                if self.model.grid.is_cell_empty(newPos):
-                    self.model.grid.move_agent(self, (newPos))
-
-        if self.direccion == 1:
-            newPos = (self.pos[0]+1, self.pos[1])
-            if not self.model.grid.out_of_bounds(newPos):
-                if self.model.grid.is_cell_empty(newPos):
-                    self.model.grid.move_agent(self, (newPos))
-        '''
 
     def step(self):
         self.move()
@@ -117,10 +113,34 @@ class AgenteSemaforo(Agent):
     def __init__(self, unique_id, model):
         super().__init__(unique_id, model)
         # 1 - verde, 2 - amarillo, 3 - rojo
-        self.color = random.choice([1, 2, 3])
+        self.color = 3
+        self.pasos = 0
 
     def step(self):
-        pass
+        self.pasos += 1
+        if self.pasos == 5:
+            if self.model.grid[14][9].color != 1 and self.model.grid[9][14].color != 1:
+                semaforo1 = 0
+                semaforo2 = 0
+                for i in range(7, 11):
+                    if not self.model.grid.is_cell_empty((i, 11)):
+                        semaforo1 += 1
+                    if not self.model.grid.is_cell_empty((i, 12)):
+                        semaforo1 += 1
+
+                for i in range(7, 11):
+                    if not self.model.grid.is_cell_empty((11, i)):
+                        semaforo2 += 1
+                    if not self.model.grid.is_cell_empty((12, i)):
+                        semaforo2 += 1
+
+                if semaforo1 >= semaforo2:
+                    self.model.grid[14][9].color = 1
+                    self.pasos = 0
+                    self.model.grid[9][14].pasos = 0
+
+        elif self.pasos > 5 and self.model.grid[14][9].color != 1 and self.model.grid[9][14].color != 1:
+            self.pasos = 0
 
 
 class AgenteBanqueta(Agent):
@@ -206,12 +226,33 @@ class TraficModel(Model):
             self.grid.place_agent(a, listaCoords[i])
 
         # Añadir los vehículos a las celdas
+        j = 0
         for i in range(numBanq, numBanq + self.num_agents):
+            # positions = [(12, 0), (11, 0), (0, 12), (0, 11),
+            #              (12, 2), (11, 2), (2, 12), (2, 11),
+            #              (12, 4), (11, 4), (4, 12), (4, 11),
+            #              (12, 6), (11, 6), (6, 12), (6, 11),
+            #              (12, 8), (11, 8), (8, 12), (8, 11),
+            #              (12, 10), (11, 10), (10, 12), (10, 11)]
+            positions = [(12, 0), (11, 0), (0, 12), (0, 11)]
             a = AgenteVehiculo(i, self)
+            if positions[j][0] < positions[j][1]:
+                a.frente = 1
             self.schedule.add(a)
-            x = 12
-            y = 0
+            x = positions[j][0]
+            y = positions[j][1]
             self.grid.place_agent(a, (x, y))
+            j += 1
+
+        j = 0
+        for i in range(numBanq + self.num_agents, numBanq + self.num_agents + 2):
+            posSemaforos = [(9, 14), (14, 9)]
+            a = AgenteSemaforo(i, self)
+            self.schedule.add(a)
+            x = posSemaforos[j][0]
+            y = posSemaforos[j][1]
+            self.grid.place_agent(a, (x, y))
+            j += 1
 
     def step(self):
         '''
