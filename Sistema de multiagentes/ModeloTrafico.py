@@ -30,10 +30,8 @@ class AgenteVehiculo(Agent):
             newY = self.pos[1] + 1
             #celdaEnfrente = (self.pos[0], self.pos[1]+1)
             if newY >= self.model.grid.height:
-                if self.pos == (11, 23):
-                    celdaEnfrente = (12, 0)
-                else:
-                    celdaEnfrente = (self.pos[0], 0)
+                coords = [(11, 0), (12, 0)]
+                celdaEnfrente = random.choice(coords)
             else:
                 celdaEnfrente = (self.pos[0], newY)
             celdaDerecha = (self.pos[0]+1, self.pos[1])
@@ -41,7 +39,8 @@ class AgenteVehiculo(Agent):
         elif self.frente == 1:
             newX = self.pos[0] + 1
             if newX >= self.model.grid.width:
-                celdaEnfrente = (0, 12)
+                coords = [(0, 11), (0, 12)]
+                celdaEnfrente = random.choice(coords)
             else:
                 celdaEnfrente = (newX, self.pos[1])
             #celdaEnfrente = (self.pos[0]+1, self.pos[1])
@@ -76,13 +75,13 @@ class AgenteVehiculo(Agent):
                 return
 
         if self.pos == (12, 11) or self.pos == (11, 12):
-            # 0 - derecho, 1 - derecha ó izquierda
-            proxMov = random.choice([0, 1])
+            # 0 - derecho, 1 ó 2 - derecha ó izquierda
+            proxMov = random.choice([0, 1, 2])
             if proxMov == 0 and self.model.grid.is_cell_empty(celdaEnfrente):
                 self.model.grid.move_agent(self, celdaEnfrente)
 
             else:
-                if self.frente == 0 and self.pos == (12, 11):
+                if self.frente == 0 and self.pos == (12, 11) and self.model.grid.is_cell_empty(celdaDerecha):
                     self.model.grid.move_agent(self, celdaDerecha)
                     # Hacer que el frente del coche gire cuando se gira hacia la derecha
                     self.frente += 1
@@ -90,7 +89,7 @@ class AgenteVehiculo(Agent):
                     if self.frente == 4:
                         self.frente = 0
 
-                elif self.frente == 1 and self.pos == (11, 12):
+                elif self.frente == 1 and self.pos == (11, 12) and self.model.grid.is_cell_empty(celdaIzquierda):
                     self.model.grid.move_agent(self, celdaIzquierda)
                     self.frente = 0
 
@@ -118,29 +117,48 @@ class AgenteSemaforo(Agent):
 
     def step(self):
         self.pasos += 1
-        if self.pasos == 5:
-            if self.model.grid[14][9].color != 1 and self.model.grid[9][14].color != 1:
-                semaforo1 = 0
-                semaforo2 = 0
-                for i in range(7, 11):
-                    if not self.model.grid.is_cell_empty((i, 11)):
-                        semaforo1 += 1
-                    if not self.model.grid.is_cell_empty((i, 12)):
-                        semaforo1 += 1
+        if self.model.grid[14][9].color == 3 and self.model.grid[9][14].color == 3 and self.pasos == 5:
+            semaforo1 = 0
+            semaforo2 = 0
+            for i in range(0, 11):
+                if not self.model.grid.is_cell_empty((i, 11)):
+                    semaforo1 += 1
+                if not self.model.grid.is_cell_empty((i, 12)):
+                    semaforo1 += 1
 
-                for i in range(7, 11):
-                    if not self.model.grid.is_cell_empty((11, i)):
-                        semaforo2 += 1
-                    if not self.model.grid.is_cell_empty((12, i)):
-                        semaforo2 += 1
+            for i in range(0, 11):
+                if not self.model.grid.is_cell_empty((11, i)):
+                    semaforo2 += 1
+                if not self.model.grid.is_cell_empty((12, i)):
+                    semaforo2 += 1
 
-                if semaforo1 >= semaforo2:
-                    self.model.grid[14][9].color = 1
-                    self.pasos = 0
-                    self.model.grid[9][14].pasos = 0
+            if semaforo1 >= semaforo2:
+                self.model.grid[14][9].color = 1
+            else:
+                self.model.grid[9][14].color = 1
+            return
 
-        elif self.pasos > 5 and self.model.grid[14][9].color != 1 and self.model.grid[9][14].color != 1:
+        elif self.pasos > 5 and self.model.grid[14][9].color == 3 and self.model.grid[9][14].color == 3:
             self.pasos = 0
+
+        elif self.model.grid[14][9].color == 1 and self.pasos == 11:
+            self.model.grid[14][9].color = 2
+
+        elif self.model.grid[9][14].color == 1 and self.pasos == 11:
+            self.model.grid[9][14].color = 2
+
+        elif self.model.grid[14][9].color == 2 and self.pasos == 16:
+            self.model.grid[14][9].color = 3
+            self.pasos = 0
+            print('f')
+
+        elif self.model.grid[9][14].color == 2 and self.pasos == 16:
+            self.model.grid[9][14].color = 3
+            self.pasos = 0
+            print('f')
+
+        else:
+            return
 
 
 class AgenteBanqueta(Agent):
@@ -228,13 +246,13 @@ class TraficModel(Model):
         # Añadir los vehículos a las celdas
         j = 0
         for i in range(numBanq, numBanq + self.num_agents):
-            # positions = [(12, 0), (11, 0), (0, 12), (0, 11),
-            #              (12, 2), (11, 2), (2, 12), (2, 11),
-            #              (12, 4), (11, 4), (4, 12), (4, 11),
-            #              (12, 6), (11, 6), (6, 12), (6, 11),
-            #              (12, 8), (11, 8), (8, 12), (8, 11),
-            #              (12, 10), (11, 10), (10, 12), (10, 11)]
-            positions = [(12, 0), (11, 0), (0, 12), (0, 11)]
+            positions = [(12, 0), (11, 0), (0, 12), (0, 11),
+                         (12, 2), (11, 2), (2, 12), (2, 11),
+                         (12, 4), (11, 4), (4, 12), (4, 11),
+                         (12, 6), (11, 6), (6, 12), (6, 11),
+                         (12, 8), (11, 8), (8, 12), (8, 11),
+                         (12, 10), (11, 10), (10, 12), (10, 11)]
+            #positions = [(12, 0), (11, 0), (0, 12), (0, 11)]
             a = AgenteVehiculo(i, self)
             if positions[j][0] < positions[j][1]:
                 a.frente = 1
