@@ -282,16 +282,9 @@ class TraficModel(Model):
         ps = []
 
         for a in agents:
-            xy = a.pos
             if isinstance(a, AgenteVehiculo):
-                type = "vehiculo"
-                p = [xy[0], xy[1], 0, type]
-            elif isinstance(a, AgenteSemaforo):
-                type = "semaforo"
-                p = [xy[0], xy[1], 0, type]
-            else:
-                type = "banqueta"
-                p = [xy[0], xy[1], 0, type]
-            ps.append(p)
+                xy = a.pos
+                p = [xy[0], xy[1], 0]
+                ps.append(p)
 
         return ps

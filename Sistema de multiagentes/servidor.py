@@ -16,7 +16,6 @@ def positionsToJSON(ps):
             "x": p[0],
             "z": p[1],
             "y": p[2],
-            "type": p[3]
         }
         posDict.append(pos)
     return json.dumps(posDict)

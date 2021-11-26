@@ -23,7 +23,7 @@ public class Conexion : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("bundle", "the data");
-        string url = "http://localhost:8585";
+        string url = "http://localhost:8585/multiagentes";
         //using (UnityWebRequest www = UnityWebRequest.Post(url, form))
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
@@ -44,10 +44,13 @@ public class Conexion : MonoBehaviour
                 //Debug.Log("Form upload complete!");
                 //Data tPos = JsonUtility.FromJson<Data>(www.downloadHandler.text.Replace('\'', '\"'));
                 //Debug.Log(tPos);
+
+                
                 List<Vector3> newPositions = new List<Vector3>();
                 string txt = www.downloadHandler.text.Replace('\'', '\"');
                 print(txt);
-                txt = txt.TrimStart('"', '{', 'd', 'a', 't', 'a', ':', '[');
+                //txt = txt.TrimStart('"', '{', 'd', 'a', 't', 'a', ':', '[');
+                txt = txt.TrimStart('"','[', '{');
                 txt = "{\"" + txt;
                 txt = txt.TrimEnd(']', '}');
                 txt = txt + '}';
@@ -59,7 +62,9 @@ public class Conexion : MonoBehaviour
                     if (i == 0) strs[i] = strs[i] + '}';
                     else if (i == strs.Length - 1) strs[i] = '{' + strs[i];
                     else strs[i] = '{' + strs[i] + '}';
+                    Debug.Log(strs[i]);
                     Vector3 test = JsonUtility.FromJson<Vector3>(strs[i]);
+                    print(test);
                     newPositions.Add(test);
                 }
 
@@ -70,6 +75,7 @@ public class Conexion : MonoBehaviour
                     poss.Add(newPositions[s]);
                 }
                 positions.Add(poss);
+                
             }
         }
 
@@ -124,6 +130,7 @@ public class Conexion : MonoBehaviour
                 spheres[s].transform.localPosition = interpolated;
 
                 Vector3 dir = last[s] - prevLast[s];
+                
                 spheres[s].transform.rotation = Quaternion.LookRotation(dir);
             }
         }
