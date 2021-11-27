@@ -17,8 +17,7 @@ def agent_portrayal(agent):
                 'Layer': 0,
                 'Color': 'red',
                 'w': 1,
-                'h': 1,
-                'text': str(agent.unique_id)}
+                'h': 1}
 
     if (isinstance(agent, AgenteBanqueta)):
         portayal['Color'] = 'grey'
@@ -33,10 +32,10 @@ def agent_portrayal(agent):
     return portayal
 
 
-grid = CanvasGrid(agent_portrayal, 24, 24, 500, 500)
+grid = CanvasGrid(agent_portrayal, 55, 55, 500, 500)
 server = ModularServer(TraficModel,
                        [grid],
                        'Modelo de tráfico',
-                       {'N': 24, 'width': 24, 'height': 24})
+                       {'N': 12, 'width': 55, 'height': 55})
 server.port = 8521  # The default
 server.launch()

@@ -6,7 +6,7 @@ import atexit
 from ModeloTrafico import TraficModel
 
 app = Flask(__name__, static_url_path='')
-model = TraficModel(24, 24, 24)
+model = TraficModel(2, 55, 55)
 
 
 def positionsToJSON(ps):
