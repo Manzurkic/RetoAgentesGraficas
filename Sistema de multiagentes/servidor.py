@@ -9,7 +9,7 @@ app = Flask(__name__, static_url_path='')
 model = TraficModel(2, 55, 55)
 
 
-def positionsToJSON(ps, colors):
+def positionsToJSON(ps):
     posDict = []
     for p in ps:
         pos = {
@@ -18,14 +18,13 @@ def positionsToJSON(ps, colors):
             "y": p[2],
         }
         posDict.append(pos)
-    json = {"positions": posDict}
+    return json.dumps(posDict)
 
+def colorsToJSON(colors):
     colorsDict = []
     for color in colors:
         colorsDict.append(color)
-    json['colors'] = colorsDict
-
-    return json
+    return json.dumps(colorsDict)
 
 
 port = int(os.getenv('PORT', 8585))
@@ -38,8 +37,13 @@ def root():
 
 @app.route('/multiagentes')
 def multiagentes():
-    positions, colors = model.step()
-    return positionsToJSON(positions, colors)
+    positions = model.step()
+    return positionsToJSON(positions)
+
+@app.route('/semaforos')
+def semaforos():
+    colors = model.getColors()
+    return colorsToJSON(colors)
 
 
 if __name__ == '__main__':

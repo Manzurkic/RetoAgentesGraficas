@@ -279,6 +279,19 @@ class TraficModel(Model):
             self.grid.place_agent(a, (x, y))
             j += 1
 
+    def getColors(self):
+        '''
+        Obtener los colores de los semáforos
+        '''
+        agents = self.schedule.agents
+        colors = []
+
+        for a in agents:
+            if isinstance(a, AgenteSemaforo):
+                colors.append(a.color)
+        
+        return colors
+
     def step(self):
         '''
         Avanzar el modelo un paso
@@ -294,7 +307,6 @@ class TraficModel(Model):
                 xy = a.pos
                 p = [xy[0], xy[1], -1.67]
                 ps.append(p)
-            if isinstance(a, AgenteSemaforo):
-                colors.append(a.color)
+            
 
-        return ps, colors
+        return ps

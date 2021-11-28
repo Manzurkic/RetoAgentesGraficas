@@ -1,5 +1,5 @@
 // TC2008B Modelación de Sistemas Multiagentes con gráficas computacionales
-// C# client to interact with Python server via POST
+// C# client to interact with Python server via GET
 // Sergio Ruiz-Loza, Ph.D. March 2021
 
 using System;
@@ -18,22 +18,15 @@ public class Conexion : MonoBehaviour
     public float timeToUpdate = 5.0f;
     private float timer;
     public float dt;
-    [SerializeField] public List<int> jsonColor;
-    [SerializeField] public List<Position> jsonPosition;
+    public int semaforo1;
+    public int semaforo2;
+    public GameObject semaforoVerde1;
+    public GameObject semaforoVerde2;
+    public GameObject semaforoAmarillo1;
+    public GameObject semaforoAmarillo2;
+    public GameObject semaforoRojo1;
+    public GameObject semaforoRojo2;
 
-    [Serializable]
-    public class Position
-    {
-        public double x { get; set; }
-        public double y { get; set; }
-        public double z { get; set; }
-    }
-    [Serializable]
-    public class JsonAgentes
-    {
-        public List<int> colors { get; set; }
-        public List<Position> positions { get; set; }
-    }
 
     // IEnumerator - yield return
     IEnumerator SendData(string data)
@@ -41,7 +34,6 @@ public class Conexion : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("bundle", "the data");
         string url = "http://localhost:8585/multiagentes";
-        //using (UnityWebRequest www = UnityWebRequest.Post(url, form))
         using (UnityWebRequest www = UnityWebRequest.Get(url))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(data);
@@ -54,18 +46,11 @@ public class Conexion : MonoBehaviour
             //if (www.isNetworkError || www.isHttpError)
             if (www.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log(www.downloadHandler.text);    // Answer from Python
-                string txt = www.downloadHandler.text.Replace('\'', '\"');
-                JsonAgentes respuesta = JsonUtility.FromJson<JsonAgentes>(txt);
-                jsonColor = respuesta.colors;
-                jsonPosition = respuesta.positions;
-                print(jsonColor);
-                print(jsonPosition);
+                //Debug.Log(www.downloadHandler.text);    // Answer from Python
                 //Debug.Log("Form upload complete!");
                 //Data tPos = JsonUtility.FromJson<Data>(www.downloadHandler.text.Replace('\'', '\"'));
                 //Debug.Log(tPos);
 
-                /*
                 List<Vector3> newPositions = new List<Vector3>();
                 string txt = www.downloadHandler.text.Replace('\'', '\"');
                 print(txt);
@@ -95,7 +80,37 @@ public class Conexion : MonoBehaviour
                     poss.Add(newPositions[s]);
                 }
                 positions.Add(poss);
-                */
+            }
+            else
+            {
+                Debug.Log(www.error);
+            }
+        }
+
+    }
+
+    IEnumerator Semaforos()
+    {
+        //WWWForm form = new WWWForm();
+        //form.AddField("bundle", "the data");
+        string urlSemaforos = "http://localhost:8585/semaforos";
+        //using (UnityWebRequest www = UnityWebRequest.Post(url, form))
+        using (UnityWebRequest www = UnityWebRequest.Get(urlSemaforos))
+        {
+            //www.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
+            //www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
+            //www.SetRequestHeader("Content-Type", "text/html");
+            www.SetRequestHeader("Content-Type", "application/json");
+
+            yield return www.SendWebRequest();          // Talk to Python
+            //if (www.isNetworkError || www.isHttpError)
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                string txt = www.downloadHandler.text.Replace('\'', '\"');
+                txt = txt.TrimStart('"', '[', '{');
+                txt = txt.TrimEnd(']', '}');
+                semaforo1 = (int)Char.GetNumericValue(txt[0]);
+                semaforo2 = (int)Char.GetNumericValue(txt[3]);
             }
             else
             {
@@ -116,6 +131,7 @@ public class Conexion : MonoBehaviour
         string json = EditorJsonUtility.ToJson(fakePos);
         //StartCoroutine(SendData(call));
         StartCoroutine(SendData(json));
+        StartCoroutine(Semaforos());
         timer = timeToUpdate;
 #endif
     }
@@ -137,6 +153,7 @@ public class Conexion : MonoBehaviour
             Vector3 fakePos = new Vector3(3.44f, 0, -15.707f);
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine(SendData(json));
+            StartCoroutine(Semaforos());
 #endif
         }
 
@@ -157,6 +174,43 @@ public class Conexion : MonoBehaviour
                 
                 spheres[s].transform.rotation = Quaternion.LookRotation(dir);
             }
+        }
+
+        // SEMAFOROS
+        if (semaforo1 == 1)
+        {
+            semaforoAmarillo1.GetComponent<Renderer>().enabled = false;
+            semaforoRojo1.GetComponent<Renderer>().enabled = false;
+            semaforoVerde1.GetComponent<Renderer>().enabled = true;
+        } else if (semaforo1 == 2)
+        {
+            semaforoAmarillo1.GetComponent<Renderer>().enabled = true;
+            semaforoRojo1.GetComponent<Renderer>().enabled = false;
+            semaforoVerde1.GetComponent<Renderer>().enabled = false;
+        } else if (semaforo1 == 3)
+        {
+            semaforoAmarillo1.GetComponent<Renderer>().enabled = false;
+            semaforoRojo1.GetComponent<Renderer>().enabled = true;
+            semaforoVerde1.GetComponent<Renderer>().enabled = false;
+        }
+
+        if (semaforo2 == 1)
+        {
+            semaforoAmarillo2.GetComponent<Renderer>().enabled = false;
+            semaforoRojo2.GetComponent<Renderer>().enabled = false;
+            semaforoVerde2.GetComponent<Renderer>().enabled = true;
+        }
+        else if (semaforo2 == 2)
+        {
+            semaforoAmarillo2.GetComponent<Renderer>().enabled = true;
+            semaforoRojo2.GetComponent<Renderer>().enabled = false;
+            semaforoVerde2.GetComponent<Renderer>().enabled = false;
+        }
+        else if (semaforo2 == 3)
+        {
+            semaforoAmarillo2.GetComponent<Renderer>().enabled = false;
+            semaforoRojo2.GetComponent<Renderer>().enabled = true;
+            semaforoVerde2.GetComponent<Renderer>().enabled = false;
         }
     }
 }
