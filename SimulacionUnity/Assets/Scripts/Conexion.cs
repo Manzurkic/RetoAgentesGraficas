@@ -9,6 +9,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
+
 public class Conexion : MonoBehaviour
 {
     List<List<Vector3>> positions;
@@ -17,6 +18,22 @@ public class Conexion : MonoBehaviour
     public float timeToUpdate = 5.0f;
     private float timer;
     public float dt;
+    [SerializeField] public List<int> jsonColor;
+    [SerializeField] public List<Position> jsonPosition;
+
+    [Serializable]
+    public class Position
+    {
+        public double x { get; set; }
+        public double y { get; set; }
+        public double z { get; set; }
+    }
+    [Serializable]
+    public class JsonAgentes
+    {
+        public List<int> colors { get; set; }
+        public List<Position> positions { get; set; }
+    }
 
     // IEnumerator - yield return
     IEnumerator SendData(string data)
@@ -34,23 +51,26 @@ public class Conexion : MonoBehaviour
             www.SetRequestHeader("Content-Type", "application/json");
 
             yield return www.SendWebRequest();          // Talk to Python
-            if (www.isNetworkError || www.isHttpError)
+            //if (www.isNetworkError || www.isHttpError)
+            if (www.result == UnityWebRequest.Result.Success)
             {
-                Debug.Log(www.error);
-            }
-            else
-            {
-                //Debug.Log(www.downloadHandler.text);    // Answer from Python
+                Debug.Log(www.downloadHandler.text);    // Answer from Python
+                string txt = www.downloadHandler.text.Replace('\'', '\"');
+                JsonAgentes respuesta = JsonUtility.FromJson<JsonAgentes>(txt);
+                jsonColor = respuesta.colors;
+                jsonPosition = respuesta.positions;
+                print(jsonColor);
+                print(jsonPosition);
                 //Debug.Log("Form upload complete!");
                 //Data tPos = JsonUtility.FromJson<Data>(www.downloadHandler.text.Replace('\'', '\"'));
                 //Debug.Log(tPos);
 
-                
+                /*
                 List<Vector3> newPositions = new List<Vector3>();
                 string txt = www.downloadHandler.text.Replace('\'', '\"');
                 print(txt);
                 //txt = txt.TrimStart('"', '{', 'd', 'a', 't', 'a', ':', '[');
-                txt = txt.TrimStart('"','[', '{');
+                txt = txt.TrimStart('"', '[', '{');
                 txt = "{\"" + txt;
                 txt = txt.TrimEnd(']', '}');
                 txt = txt + '}';
@@ -75,7 +95,11 @@ public class Conexion : MonoBehaviour
                     poss.Add(newPositions[s]);
                 }
                 positions.Add(poss);
-                
+                */
+            }
+            else
+            {
+                Debug.Log(www.error);
             }
         }
 

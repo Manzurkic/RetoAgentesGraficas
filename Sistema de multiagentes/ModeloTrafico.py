@@ -120,10 +120,10 @@ class AgenteSemaforo(Agent):
         semaforo1 = 0
         semaforo2 = 0
         for i in range(12, 25):
-                if not self.model.grid.is_cell_empty((i, 28)):
-                    semaforo1 += 1
-                if not self.model.grid.is_cell_empty((i, 30)):
-                    semaforo1 += 1
+            if not self.model.grid.is_cell_empty((i, 28)):
+                semaforo1 += 1
+            if not self.model.grid.is_cell_empty((i, 30)):
+                semaforo1 += 1
 
         for i in range(14, 28):
             if not self.model.grid.is_cell_empty((25, i)):
@@ -255,11 +255,11 @@ class TraficModel(Model):
         # Añadir los vehículos a las celdas
         j = 0
         for i in range(numBanq, numBanq + self.num_agents):
-            #positions = [(25, 0), (27, 0), (0, 30), (0, 28),
+            # positions = [(25, 0), (27, 0), (0, 30), (0, 28),
             #             (25, 2), (27, 2), (2, 30), (2, 28),
             #             (25, 4), (27, 4), (4, 30), (4, 28)]
-            positions = [(27,0),(25,0)]
-            
+            positions = [(27, 0), (25, 0)]
+
             a = AgenteVehiculo(i, self)
             if positions[j][0] < positions[j][1]:
                 a.frente = 1
@@ -287,11 +287,14 @@ class TraficModel(Model):
 
         agents = self.schedule.agents
         ps = []
+        colors = []
 
         for a in agents:
             if isinstance(a, AgenteVehiculo):
                 xy = a.pos
                 p = [xy[0], xy[1], -1.67]
                 ps.append(p)
+            if isinstance(a, AgenteSemaforo):
+                colors.append(a.color)
 
-        return ps
+        return ps, colors
