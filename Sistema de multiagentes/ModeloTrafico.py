@@ -22,7 +22,7 @@ class AgenteVehiculo(Agent):
         super().__init__(unique_id, model)
         self.tipo = random.choice([1, 2, 3])
         self.direccion = 0    # 0 - derecho, 1 - derecha
-        self.frente = 0       # 0 - arriba, 1 - derecha, 2 - abajo, 3 - izquierda
+        self.frente = 0      # 0 - arriba, 1 - derecha, 2 - abajo, 3 - izquierda
 
     def move(self):
 
@@ -32,8 +32,13 @@ class AgenteVehiculo(Agent):
             if newY >= self.model.grid.height:
                 coords = [(25, 0), (27, 0)]
                 celdaEnfrente = random.choice(coords)
+                celdaEnfrente2 = (celdaEnfrente[0], celdaEnfrente[1]+1)
             else:
                 celdaEnfrente = (self.pos[0], newY)
+                if celdaEnfrente[1]+1 >= self.model.grid.height:
+                    celdaEnfrente2 = (self.pos[0], 0)
+                else:
+                    celdaEnfrente2 = (celdaEnfrente[0], newY+1)
             celdaDerecha = (self.pos[0]+1, self.pos[1])
             celdaIzquierda = (self.pos[0]-1, self.pos[1])
         elif self.frente == 1:
@@ -41,8 +46,13 @@ class AgenteVehiculo(Agent):
             if newX >= self.model.grid.width:
                 coords = [(0, 28), (0, 30)]
                 celdaEnfrente = random.choice(coords)
+                celdaEnfrente2 = (celdaEnfrente[0]+1, celdaEnfrente[1])
             else:
                 celdaEnfrente = (newX, self.pos[1])
+                if celdaEnfrente[0]+1 >= self.model.grid.width:
+                    celdaEnfrente2 = (0, celdaEnfrente[1])
+                else:
+                    celdaEnfrente2 = (newX+1, celdaEnfrente[1])
             #celdaEnfrente = (self.pos[0]+1, self.pos[1])
             celdaDerecha = (self.pos[0], self.pos[1]-1)
             celdaIzquierda = (self.pos[0], self.pos[1]+1)
@@ -66,35 +76,36 @@ class AgenteVehiculo(Agent):
         # if self.model.grid.is_cell_empty(celdaEnfrente):
         #    self.model.grid.move_agent(self, celdaEnfrente)
 
-        if self.pos == (25, 27) or self.pos == (27, 27):
+        if self.pos == (25, 22) or self.pos == (27, 22):
             if self.model.grid[23][32].color == 2 or self.model.grid[23][32].color == 3:
                 return
 
-        elif self.pos == (24, 28) or self.pos == (24, 30):
+        elif self.pos == (20, 28) or self.pos == (20, 30):
             if self.model.grid[29][26].color == 2 or self.model.grid[29][26].color == 3:
                 return
 
-        if self.pos == (27, 28) or self.pos == (25, 30):
-            # 0 - derecho, 1 ó 2 - derecha ó izquierda
-            proxMov = random.choice([0, 1, 2])
-            if proxMov == 0 and self.model.grid.is_cell_empty(celdaEnfrente):
+        if self.model.grid.is_cell_empty(celdaEnfrente2):
+            if self.pos == (27, 28) or self.pos == (25, 30):
+                # 0 - derecho, 1 ó 2 - derecha ó izquierda
+                proxMov = random.choice([0, 1, 2])
+                if proxMov == 0 and self.model.grid.is_cell_empty(celdaEnfrente):
+                    self.model.grid.move_agent(self, celdaEnfrente)
+
+                else:
+                    if self.frente == 0 and self.pos == (27, 28) and self.model.grid.is_cell_empty(celdaDerecha):
+                        self.frente = 1
+                        self.model.grid.move_agent(self, celdaDerecha)
+                        # Hacer que el frente del coche gire cuando se gira hacia la derecha
+
+                    elif self.frente == 1 and self.pos == (25, 30) and self.model.grid.is_cell_empty(celdaIzquierda):
+                        self.frente = 0
+                        self.model.grid.move_agent(self, celdaIzquierda)
+
+            elif self.model.grid.is_cell_empty(celdaEnfrente):
                 self.model.grid.move_agent(self, celdaEnfrente)
 
             else:
-                if self.frente == 0 and self.pos == (27, 28) and self.model.grid.is_cell_empty(celdaDerecha):
-                    self.model.grid.move_agent(self, celdaDerecha)
-                    # Hacer que el frente del coche gire cuando se gira hacia la derecha
-                    self.frente += 1
-                    # Solo hay cuatro direcciones posibles, regresar a direccion 0
-                    if self.frente == 4:
-                        self.frente = 0
-
-                elif self.frente == 1 and self.pos == (25, 30) and self.model.grid.is_cell_empty(celdaIzquierda):
-                    self.model.grid.move_agent(self, celdaIzquierda)
-                    self.frente = 0
-
-        elif self.model.grid.is_cell_empty(celdaEnfrente):
-            self.model.grid.move_agent(self, celdaEnfrente)
+                return
 
         else:
             return
@@ -255,12 +266,14 @@ class TraficModel(Model):
         # Añadir los vehículos a las celdas
         j = 0
         for i in range(numBanq, numBanq + self.num_agents):
-            # positions = [(25, 0), (27, 0), (0, 30), (0, 28),
-            #             (25, 2), (27, 2), (2, 30), (2, 28),
-            #             (25, 4), (27, 4), (4, 30), (4, 28)]
-            positions = [(27, 0), (25, 0)]
+            positions = [(25, 0), (27, 0), (0, 30), (0, 28),
+                         (25, 2), (27, 2), (2, 30), (2, 28),
+                         (25, 4), (27, 4), (4, 30), (4, 28),
+                         (6, 30), (6, 28)]
+            #positions = [(27, 0), (25, 0)]
 
             a = AgenteVehiculo(i, self)
+
             if positions[j][0] < positions[j][1]:
                 a.frente = 1
             self.schedule.add(a)
@@ -289,8 +302,21 @@ class TraficModel(Model):
         for a in agents:
             if isinstance(a, AgenteSemaforo):
                 colors.append(a.color)
-        
+
         return colors
+
+    def getFront(self):
+        '''
+        Obtener la dirección de los vehículos
+        '''
+        agents = self.schedule.agents
+        directions = []
+
+        for a in agents:
+            if isinstance(a, AgenteVehiculo):
+                directions.append(a.frente)
+
+        return directions
 
     def step(self):
         '''
@@ -305,8 +331,7 @@ class TraficModel(Model):
         for a in agents:
             if isinstance(a, AgenteVehiculo):
                 xy = a.pos
-                p = [xy[0], xy[1], -1.67]
+                p = [xy[0], xy[1], -1.423404]
                 ps.append(p)
-            
 
         return ps

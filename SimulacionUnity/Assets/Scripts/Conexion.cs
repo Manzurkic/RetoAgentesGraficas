@@ -20,6 +20,7 @@ public class Conexion : MonoBehaviour
     public float dt;
     public int semaforo1;
     public int semaforo2;
+    public List<int> fronts;
     public GameObject semaforoVerde1;
     public GameObject semaforoVerde2;
     public GameObject semaforoAmarillo1;
@@ -33,8 +34,9 @@ public class Conexion : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("bundle", "the data");
+        //string url = "http://reto-equipo6-2.us-south.cf.appdomain.cloud/multiagentes";
         string url = "http://localhost:8585/multiagentes";
-        using (UnityWebRequest www = UnityWebRequest.Get(url))
+        using (UnityWebRequest www = UnityWebRequest.Post(url, form))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(data);
             www.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
@@ -89,13 +91,13 @@ public class Conexion : MonoBehaviour
 
     }
 
-    IEnumerator Semaforos()
+    IEnumerator Semaforos(string data)
     {
-        //WWWForm form = new WWWForm();
-        //form.AddField("bundle", "the data");
+        WWWForm form = new WWWForm();
+        form.AddField("bundle", "the data");
+        //string urlSemaforos = "http://reto-equipo6-2.us-south.cf.appdomain.cloud/semaforos";
         string urlSemaforos = "http://localhost:8585/semaforos";
-        //using (UnityWebRequest www = UnityWebRequest.Post(url, form))
-        using (UnityWebRequest www = UnityWebRequest.Get(urlSemaforos))
+        using (UnityWebRequest www = UnityWebRequest.Post(urlSemaforos, form))
         {
             //www.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
             //www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
@@ -131,7 +133,7 @@ public class Conexion : MonoBehaviour
         string json = EditorJsonUtility.ToJson(fakePos);
         //StartCoroutine(SendData(call));
         StartCoroutine(SendData(json));
-        StartCoroutine(Semaforos());
+        StartCoroutine(Semaforos(json));
         timer = timeToUpdate;
 #endif
     }
@@ -153,7 +155,7 @@ public class Conexion : MonoBehaviour
             Vector3 fakePos = new Vector3(3.44f, 0, -15.707f);
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine(SendData(json));
-            StartCoroutine(Semaforos());
+            StartCoroutine(Semaforos(json));
 #endif
         }
 
@@ -170,11 +172,14 @@ public class Conexion : MonoBehaviour
                 Vector3 interpolated = Vector3.Lerp(prevLast[s], last[s], dt);
                 spheres[s].transform.localPosition = interpolated;
 
-                Vector3 dir = last[s] - prevLast[s];
-                
-                spheres[s].transform.rotation = Quaternion.LookRotation(dir);
+                if (last[s] != prevLast[s])
+                {
+                    Vector3 dir = last[s] - prevLast[s];
+                    spheres[s].transform.rotation = Quaternion.LookRotation(dir);
+                }
             }
         }
+
 
         // SEMAFOROS
         if (semaforo1 == 1)
@@ -182,12 +187,14 @@ public class Conexion : MonoBehaviour
             semaforoAmarillo1.GetComponent<Renderer>().enabled = false;
             semaforoRojo1.GetComponent<Renderer>().enabled = false;
             semaforoVerde1.GetComponent<Renderer>().enabled = true;
-        } else if (semaforo1 == 2)
+        }
+        else if (semaforo1 == 2)
         {
             semaforoAmarillo1.GetComponent<Renderer>().enabled = true;
             semaforoRojo1.GetComponent<Renderer>().enabled = false;
             semaforoVerde1.GetComponent<Renderer>().enabled = false;
-        } else if (semaforo1 == 3)
+        }
+        else if (semaforo1 == 3)
         {
             semaforoAmarillo1.GetComponent<Renderer>().enabled = false;
             semaforoRojo1.GetComponent<Renderer>().enabled = true;
@@ -214,3 +221,4 @@ public class Conexion : MonoBehaviour
         }
     }
 }
+
