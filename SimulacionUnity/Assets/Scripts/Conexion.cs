@@ -20,7 +20,6 @@ public class Conexion : MonoBehaviour
     public float dt;
     public int semaforo1;
     public int semaforo2;
-    public List<int> fronts;
     public GameObject semaforoVerde1;
     public GameObject semaforoVerde2;
     public GameObject semaforoAmarillo1;
@@ -121,42 +120,6 @@ public class Conexion : MonoBehaviour
 
     }
 
-    IEnumerator Direcciones()
-    {
-        //WWWForm form = new WWWForm();
-        //form.AddField("bundle", "the data");
-        string urlDirecciones = "http://localhost:8585/direcciones";
-        //using (UnityWebRequest www = UnityWebRequest.Post(url, form))
-        using (UnityWebRequest www = UnityWebRequest.Get(urlDirecciones))
-        {
-            //www.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
-            //www.downloadHandler = (DownloadHandler)new DownloadHandlerBuffer();
-            //www.SetRequestHeader("Content-Type", "text/html");
-            www.SetRequestHeader("Content-Type", "application/json");
-
-            yield return www.SendWebRequest();          // Talk to Python
-            //if (www.isNetworkError || www.isHttpError)
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                string txt = www.downloadHandler.text.Replace('\'', '\"');
-                txt = txt.TrimStart('"', '[', '{');
-                txt = txt.TrimEnd(']', '}');
-                for (int i = 0; i < txt.Length; i++)
-                {
-                    if (txt[i] != ',' && txt[i] != ' ')
-                    {
-                        fronts.Add((int)Char.GetNumericValue(txt[i]));
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log(www.error);
-            }
-        }
-
-    }
-
     // Start is called before the first frame update
     void Start()
     {
@@ -169,7 +132,6 @@ public class Conexion : MonoBehaviour
         //StartCoroutine(SendData(call));
         StartCoroutine(SendData(json));
         StartCoroutine(Semaforos());
-        StartCoroutine(Direcciones());
         timer = timeToUpdate;
 #endif
     }
@@ -192,7 +154,6 @@ public class Conexion : MonoBehaviour
             string json = EditorJsonUtility.ToJson(fakePos);
             StartCoroutine(SendData(json));
             StartCoroutine(Semaforos());
-            StartCoroutine(Direcciones());
 #endif
         }
 
@@ -209,54 +170,11 @@ public class Conexion : MonoBehaviour
                 Vector3 interpolated = Vector3.Lerp(prevLast[s], last[s], dt);
                 spheres[s].transform.localPosition = interpolated;
 
-                if (last[s] != prevLast[s])
-                {
-                    Vector3 dir = last[s] - prevLast[s];
-                    spheres[s].transform.rotation = Quaternion.LookRotation(dir);
-                }
+                Vector3 dir = last[s] - prevLast[s];
+                
+                spheres[s].transform.rotation = Quaternion.LookRotation(dir);
             }
         }
-        
-        
-        /*
-        if (positions.Count > 1)
-        {
-            for (int s = 0; s < spheres.Length; s++)
-            {
-                // Get the last position for s
-                List<Vector3> last = positions[positions.Count - 1];
-                // Get the previous to last position for s
-                List<Vector3> prevLast = positions[positions.Count - 2];
-                // Interpolate using dt
-                Vector3 interpolated = Vector3.Lerp(prevLast[s], last[s], dt);
-                spheres[s].transform.localPosition = interpolated;
-                
-                if (spheres[s].transform.position.x == 25.0f || spheres[s].transform.position.x == 27.0f)
-                {
-                    float yRotation = 0.0f;
-                    spheres[s].transform.eulerAngles = new Vector3(transform.eulerAngles.x, yRotation, transform.eulerAngles.z);
-                } else
-                {
-                    float yRotation = 90.0f;
-                    spheres[s].transform.eulerAngles = new Vector3(transform.eulerAngles.x, yRotation, transform.eulerAngles.z);
-                }
-                
-                
-                if (spheres[s].transform.position.y == 28.0f || spheres[s].transform.position.y == 30.0f)
-                {
-                    float yRotation = 0.0f;
-                    spheres[s].transform.eulerAngles = new Vector3(transform.eulerAngles.x, yRotation, transform.eulerAngles.z);
-                }
-                else
-                {
-                    float yRotation = 90.0f;
-                    spheres[s].transform.eulerAngles = new Vector3(transform.eulerAngles.x, yRotation, transform.eulerAngles.z);
-                }
-                
-            }
-        }
-        */
-
 
         // SEMAFOROS
         if (semaforo1 == 1)
