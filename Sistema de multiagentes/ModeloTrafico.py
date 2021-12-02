@@ -181,6 +181,34 @@ class AgenteSemaforo(Agent):
             print('f')
 
 
+class AgenteSemaforoConvencional(Agent):
+    '''
+    Agente que simula el comportamiento de un semáforo convencional
+    '''
+
+    def __init__(self, unique_id, model, j):
+        super().__init__(unique_id, model)
+        if j == 0:
+            self.color = 3
+            self.pasos = 0
+        else:
+            self.color = 1
+            self.pasos = 200
+
+    def step(self):
+        self.pasos += 1
+
+        if self.pasos == 200 and self.color == 3:
+            self.color = 1
+
+        elif self.pasos == 340 and self.color == 1:
+            self.color = 2
+
+        elif self.pasos == 400 and self.color == 2:
+            self.color = 3
+            self.pasos = 0
+
+
 class AgenteBanqueta(Agent):
     '''
     En realidad no es un agente pero nos
@@ -200,7 +228,8 @@ class TraficModel(Model):
     Modelo para la simulación de tránsito
     '''
 
-    def __init__(self, N, width, height):
+    # tipo 1 = semáforos convencionales, tipo 2 = nuestros semáforos
+    def __init__(self, N, tipo, width, height):
         self.num_agents = N
         self.grid = SingleGrid(width, height, True)
         self.schedule = RandomActivation(self)
@@ -268,8 +297,7 @@ class TraficModel(Model):
         for i in range(numBanq, numBanq + self.num_agents):
             positions = [(25, 0), (27, 0), (0, 30), (0, 28),
                          (25, 2), (27, 2), (2, 30), (2, 28),
-                         (25, 4), (27, 4), (4, 30), (4, 28),
-                         (6, 30), (6, 28)]
+                         (25, 4), (27, 4), (4, 30), (4, 28)]
             #positions = [(27, 0), (25, 0)]
 
             a = AgenteVehiculo(i, self)
@@ -282,15 +310,28 @@ class TraficModel(Model):
             self.grid.place_agent(a, (x, y))
             j += 1
 
-        j = 0
-        for i in range(numBanq + self.num_agents, numBanq + self.num_agents + 2):
-            posSemaforos = [(23, 32), (29, 26)]
-            a = AgenteSemaforo(i, self)
-            self.schedule.add(a)
-            x = posSemaforos[j][0]
-            y = posSemaforos[j][1]
-            self.grid.place_agent(a, (x, y))
-            j += 1
+        # Añadir semáforos
+        if tipo == 2:
+            j = 0
+            for i in range(numBanq + self.num_agents, numBanq + self.num_agents + 2):
+                posSemaforos = [(23, 32), (29, 26)]
+                a = AgenteSemaforo(i, self)
+                self.schedule.add(a)
+                x = posSemaforos[j][0]
+                y = posSemaforos[j][1]
+                self.grid.place_agent(a, (x, y))
+                j += 1
+
+        else:
+            j = 0
+            for i in range(numBanq + self.num_agents, numBanq + self.num_agents + 2):
+                posSemaforos = [(23, 32), (29, 26)]
+                a = AgenteSemaforoConvencional(i, self, j)
+                self.schedule.add(a)
+                x = posSemaforos[j][0]
+                y = posSemaforos[j][1]
+                self.grid.place_agent(a, (x, y))
+                j += 1
 
     def getColors(self):
         '''
@@ -331,7 +372,7 @@ class TraficModel(Model):
         for a in agents:
             if isinstance(a, AgenteVehiculo):
                 xy = a.pos
-                p = [xy[0], xy[1], -1.423404]
+                p = [xy[0], xy[1], -1.67]
                 ps.append(p)
 
         return ps
