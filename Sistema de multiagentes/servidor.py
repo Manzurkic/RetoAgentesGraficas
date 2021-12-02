@@ -6,7 +6,7 @@ import atexit
 from ModeloTrafico import TraficModel
 
 app = Flask(__name__, static_url_path='')
-model = TraficModel(14,2, 55, 55)
+model = TraficModel(14, 2, 55, 55)
 
 
 def positionsToJSON(ps):
@@ -55,7 +55,7 @@ def semaforos():
     return colorsToJSON(colors)
 
 
-@app.route('/direcciones', methods=['POST', 'GET'])
+@ app.route('/direcciones', methods=['POST', 'GET'])
 def directions():
     directions = model.getFront()
     return directionsToJSON(directions)

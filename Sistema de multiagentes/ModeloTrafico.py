@@ -297,8 +297,8 @@ class TraficModel(Model):
         for i in range(numBanq, numBanq + self.num_agents):
             positions = [(25, 0), (27, 0), (0, 30), (0, 28),
                          (25, 2), (27, 2), (2, 30), (2, 28),
-                         (25, 4), (27, 4), (4, 30), (4, 28)]
-            #positions = [(27, 0), (25, 0)]
+                         (25, 4), (27, 4), (4, 30), (4, 28),
+                         (6, 30), (6, 28)]
 
             a = AgenteVehiculo(i, self)
 

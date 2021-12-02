@@ -22,7 +22,7 @@ def agent_portrayal(agent):
     if (isinstance(agent, AgenteBanqueta)):
         portayal['Color'] = 'grey'
 
-    elif (isinstance(agent, AgenteSemaforo)):
+    elif (isinstance(agent, AgenteSemaforo) or isinstance(agent, AgenteSemaforoConvencional)):
         if agent.color == 1:
             portayal['Color'] = 'green'
         elif agent.color == 3:
@@ -36,6 +36,16 @@ grid = CanvasGrid(agent_portrayal, 55, 55, 500, 500)
 server = ModularServer(TraficModel,
                        [grid],
                        'Modelo de tráfico',
-                       {'N': 2, 'width': 55, 'height': 55})
+                       {'N': 14, 'tipo': 2, 'width': 55, 'height': 55})
 server.port = 8521  # The default
 server.launch()
+
+'''
+grid = CanvasGrid(agent_portrayal, 55, 55, 500, 500)
+server = ModularServer(TraficModel,
+                       [grid],
+                       'Modelo de tráfico',
+                       {'N': 14, 'tipo': 1, 'width': 55, 'height': 55})
+server.port = 8585  # The default
+server.launch()
+'''
