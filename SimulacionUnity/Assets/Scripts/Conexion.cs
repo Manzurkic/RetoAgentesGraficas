@@ -34,8 +34,8 @@ public class Conexion : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("bundle", "the data");
-        //string url = "http://reto-equipo6-2.us-south.cf.appdomain.cloud/multiagentes";
-        string url = "http://localhost:8585/multiagentes";
+        string url = "http://reto-equipo6-2.us-south.cf.appdomain.cloud/multiagentes";
+        //string url = "http://localhost:8585/multiagentes";
         using (UnityWebRequest www = UnityWebRequest.Post(url, form))
         {
             byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(data);
@@ -95,8 +95,8 @@ public class Conexion : MonoBehaviour
     {
         WWWForm form = new WWWForm();
         form.AddField("bundle", "the data");
-        //string urlSemaforos = "http://reto-equipo6-2.us-south.cf.appdomain.cloud/semaforos";
-        string urlSemaforos = "http://localhost:8585/semaforos";
+        string urlSemaforos = "http://reto-equipo6-2.us-south.cf.appdomain.cloud/semaforos";
+        //string urlSemaforos = "http://localhost:8585/semaforos";
         using (UnityWebRequest www = UnityWebRequest.Post(urlSemaforos, form))
         {
             //www.uploadHandler = (UploadHandler)new UploadHandlerRaw(bodyRaw);
