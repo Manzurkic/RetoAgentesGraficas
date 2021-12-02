@@ -125,6 +125,8 @@ class AgenteSemaforo(Agent):
         # 1 - verde, 2 - amarillo, 3 - rojo
         self.color = 3
         self.pasos = 0
+        self.verde = 0
+        self.anterior = False
 
     def step(self):
         self.pasos += 1
@@ -142,6 +144,14 @@ class AgenteSemaforo(Agent):
             if not self.model.grid.is_cell_empty((27, i)):
                 semaforo2 += 1
 
+        if self.model.grid[23][32].color == 1 and self.verde >= 2 and semaforo1 != 0:
+            self.model.grid[23][32].pasos = 22
+            self.model.grid[23][32].verde = 0
+
+        if self.model.grid[29][26].color == 1 and self.verde == 2 and semaforo2 != 0:
+            self.model.grid[29][26].pasos = 22
+            self.model.grid[29][26].verde = 0
+
         if self.model.grid[23][32].color == 1 and self.model.grid[29][26].color == 3 and semaforo2 == 0 and (self.model.grid[23][32].pasos == 5 or self.model.grid[29][26].pasos == 5):
             self.model.grid[29][26].color = 3
             self.model.grid[29][26].pasos = 0
@@ -157,8 +167,16 @@ class AgenteSemaforo(Agent):
         if self.model.grid[29][26].color == 3 and self.model.grid[23][32].color == 3 and self.pasos == 5:
             if semaforo1 >= semaforo2:
                 self.model.grid[29][26].color = 1
+                if self.model.grid[29][26].anterior:
+                    self.model.grid[29][26].verde += 1
+                self.model.grid[29][26].anterior = True
+                self.model.grid[23][32].anterior = False
             else:
                 self.model.grid[23][32].color = 1
+                if self.model.grid[23][32].anterior:
+                    self.model.grid[23][32].verde += 1
+                self.model.grid[23][32].anterior = True
+                self.model.grid[29][26].anterior = False
             return
 
         elif self.pasos > 5 and self.model.grid[29][26].color == 3 and self.model.grid[23][32].color == 3:
@@ -173,12 +191,11 @@ class AgenteSemaforo(Agent):
         elif self.model.grid[29][26].color == 2 and self.pasos == 32:
             self.model.grid[29][26].color = 3
             self.pasos = 0
-            print('f')
 
         elif self.model.grid[23][32].color == 2 and self.pasos == 32:
             self.model.grid[23][32].color = 3
             self.pasos = 0
-            print('f')
+
 
 
 class AgenteSemaforoConvencional(Agent):
